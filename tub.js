@@ -36,10 +36,10 @@ function Tapper(onFinish, opts) {
     var r = {
       plan   : this.plan,
       asserts: this.asserts,
-      fails  : this.numFails,
       version: this.version,
       ok     : false
     };
+    var fails = this.numFails;
 
     if (this.bail !== null) {
       r.summary = format('Test bailed out after %d asserts with: %s'
@@ -56,8 +56,8 @@ function Tapper(onFinish, opts) {
       if (missed !== 0)  {
         r.summary = format('%d asserts not reported', missed);
       }
-      else if (r.fails > 0) {
-        r.summary = format('%d / %d asserts failed', r.fails, r.asserts.length);
+      else if (fails > 0) {
+        r.summary = format('%d / %d asserts failed', fails, r.asserts.length);
         r.failed = r.asserts.filter(function (a) {
           return !a.ok;
         });
@@ -140,19 +140,17 @@ Tapper.prototype._transform = function (line, encoding, cb) {
 module.exports = Tapper;
 
 if (module === require.main) {
-  // can only run it like this if installed devDependency splitter
+  // can only run it like this if installed optionalDependency splitter
   var Splitter = require('splitter');
   var onFinish = function (res) {
     console.log('\n\nParsed TAP v%s', res.version || 'X');
     console.log('%s %s', res.ok ? '✓' : '✗', res.summary);
-    if (res.fails > 0) {
-      res.failed.forEach(function (a) {
-        console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
-        if (a.info.length > 0) {
-          console.log(a.info.join('\n'));
-        }
-      });
-    }
+    res.failed.forEach(function (a) {
+      console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
+      if (a.info.length > 0) {
+        console.log(a.info.join('\n'));
+      }
+    });
     process.exit(res.ok ? 0 : 1);
   };
   process.stdin

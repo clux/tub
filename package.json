@@ -17,7 +17,8 @@
     "tap": "~0.4.0"
   },
   "optionalDependencies": {
-    "splitter": "~0.1.0"
+    "splitter": "~0.1.0",
+    "tap": "~0.4.0"
   },
   "bugs": {
     "url": "http://github.com/clux/tub/issues"
