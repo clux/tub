@@ -2,13 +2,13 @@
 
 Tub is a streaming tap parser that serves two purposes.
 
-- It's a writable stream that collects and determines the end result, collects assert results, failed asserts, and creates a summary and a bool to be able to determine easily from a callback what happened.
+- It's a writable stream that collects and determines the end result of the tests output. It collects assert results, failed asserts, and creates a summary string, and an `ok` bool to be able to determine easily from a callback what happened.
 
-- The piped to writable stream, is also a readable stream, in that it provides an optional shorter, comment free output that can be piped to stdout for information as the tests are running.
+- When piped to, the result is a readable stream, in that it provides a shorter, comment free output that can be piped to stdout for information as the tests are running.
 
-Because it's based on streams2, it inherits from `stream.Transform` to do this, and you will need node >= 0.10.
+It's based on streams2, and inherits from `stream.Transform` to accomplish this, so you will need node >= 0.10.
 
-The tap parser is also a little more relaxed than most tap parsers, in that numbers does not need to exist in the tap output, as long as the amount of tests add up to what's in the plan.
+The tap parser itself is a little more relaxed than most tap parsers, in that numbers does not need to exist in the tap output, as long as the amount of tests add up to what's in the plan. It also deals with the `Bail out!` statement.
 
 ## Usage 1
 Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
