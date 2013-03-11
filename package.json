@@ -2,7 +2,7 @@
   "name": "tub",
   "description": "Lax streaming tap parser",
   "author": "Eirik Albrigtsen <analsandblaster@gmail.com>",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/clux/tub.git"
