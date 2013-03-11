@@ -8,6 +8,8 @@ Tub is a streaming tap parser that serves two purposes.
 
 Because it's based on streams2, it inherits from `stream.Transform` to do this, and you will need node >= 0.10.
 
+The tap parser is also a little more relaxed than most tap parsers, in that numbers does not need to exist in the tap output, as long as the amount of tests add up to what's in the plan.
+
 ## Usage 1
 Create your own customized results logger for command line use:
 

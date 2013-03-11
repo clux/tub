@@ -6,7 +6,7 @@ var Transform = require('stream').Transform
 var re = {
   // number optional, matches delimited by at least one space `ok number comment`
   // maybe additionally delimited by a dash between these as well
-  assert: /^(not )?ok\s+\-?\s*(\d+)?\s+\-?\s*(.*)/,
+  assert: /^(not )?ok\s+\-?\s*(\d+)?\s*\-?\s*(.*)/,
   plan: /^(\d+)\.{2}(\d+)\b/,
   comment: /^#\s*(.+)/,
   bail: /^Bail out!\s*(.*)/,
@@ -48,7 +48,7 @@ function Tapper(onFinish, opts) {
         , this.bail
       );
     }
-    if (Object.keys(r.plan).length !== 2) {
+    else if (Object.keys(r.plan).length !== 2) {
       r.summary = 'no plan found';
     }
     else {
