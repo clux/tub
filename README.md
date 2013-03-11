@@ -63,7 +63,7 @@ which would give you the raw output like the following
 Note that the failed asserts gets copied to the failed list, and when using `tap` as your test runner, then every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
 
 ```js
-// add this line to the onFinish test:
+// add this line to `onFinish`
 console.log(res.failed[0].info.join('\n'));
 ```
 
@@ -105,8 +105,7 @@ $ tub test/*.js
 
 Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run.
 
-This provides a nice and short output for `tap` that quickly shows the failed tests.
-The full output looks like this:
+This provides a nice alternative to the traditional `tap` output that focuses on the failed tests:
 
 ```
 $ tub test/*.js --all
@@ -127,9 +126,11 @@ $ tub test/*.js --all
 more tests
 ...
 ✗ 1 / 61 assertions failed
-...
-same fail output for test 7
-...
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
 ```
 
 ### NEEDS TAP
