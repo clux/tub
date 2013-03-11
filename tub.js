@@ -37,33 +37,34 @@ function Tapper(onFinish, opts) {
       plan   : this.plan,
       asserts: this.asserts,
       version: this.version,
+      failed : [],
       ok     : false
     };
     var fails = this.numFails;
 
     if (this.bail !== null) {
-      r.summary = format('Test bailed out after %d asserts with: %s'
+      r.summary = format('test bailed out after %d asserts with: %s'
         , r.asserts.length
         , this.bail
       );
     }
     if (Object.keys(r.plan).length !== 2) {
-      r.summary = 'No plan found';
+      r.summary = 'no plan found';
     }
     else {
       var len = r.plan.end - r.plan.start + 1; // boundries inclusive
       var missed = len - r.asserts.length;
       if (missed !== 0)  {
-        r.summary = format('%d asserts not reported', missed);
+        r.summary = format('%d assertions not reported', missed);
       }
       else if (fails > 0) {
-        r.summary = format('%d / %d asserts failed', fails, r.asserts.length);
+        r.summary = format('%d / %d assertions failed', fails, r.asserts.length);
         r.failed = r.asserts.filter(function (a) {
           return !a.ok;
         });
       }
       else {
-        r.summary = format('all %d asserts passed', r.asserts.length);
+        r.summary = format('all %d assertions passed', r.asserts.length);
         r.ok = true;
       }
     }
@@ -138,23 +139,3 @@ Tapper.prototype._transform = function (line, encoding, cb) {
 };
 
 module.exports = Tapper;
-
-if (module === require.main) {
-  // can only run it like this if installed optionalDependency splitter
-  var Splitter = require('splitter');
-  var onFinish = function (res) {
-    console.log('\n\nParsed TAP v%s', res.version || 'X');
-    console.log('%s %s', res.ok ? '✓' : '✗', res.summary);
-    res.failed.forEach(function (a) {
-      console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
-      if (a.info.length > 0) {
-        console.log(a.info.join('\n'));
-      }
-    });
-    process.exit(res.ok ? 0 : 1);
-  };
-  process.stdin
-    .pipe(Splitter())
-    .pipe(Tapper(onFinish))
-    .pipe(process.stdout); // last pipe just to get a filtered down version of input
-}

@@ -1,25 +1,23 @@
 # Tub [![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub)
 
-Tub is a streaming tap parser that serves two purposes. It's a writable stream that collects and determines the end result, fails, summary from what's sent to it. But it's also a readable stream, in that it provides an optional shorter, comment free output that can be piped to stdout for information as the tests are running.
+Tub is a streaming tap parser that serves two purposes.
 
-Because it's based on streams2, it inherits from stream.Transform to do this, and you will need node >= 0.10.
+- It's a writable stream that collects and determines the end result, collects assert results, failed asserts, and creates a summary and a bool to be able to determine easily from a callback what happened.
+
+- The piped to writable stream, is also a readable stream, in that it provides an optional shorter, comment free output that can be piped to stdout for information as the tests are running.
+
+Because it's based on streams2, it inherits from `stream.Transform` to do this, and you will need node >= 0.10.
 
 ## Usage 1
-For programmatical use, install `tub` in the normal (non-global) way, then give it some data and an `onFinish` function.
+Create your own customized results logger for command line use:
 
 ```js
+#!/usr/bin/env node
+// tubber.js
 var tub = require('tub');
 var splitter = require('splitter')
 var onFinish = function (res) {
-  console.log('\n\nParsed TAP v%s', res.version || 'X');
-  console.log('%s %s', res.ok ? '✓' : '✗', res.summary);
-  res.failed.forEach(function (a) {
-    console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
-    if (a.info.length > 0) {
-      // failed asserts usually have stack traces or other info attached to them
-      console.log(a.info.join('\n'));
-    }
-  });
+  console.log(res);
   process.exit(res.ok ? 0 : 1)
 };
 process.stdin
@@ -28,17 +26,119 @@ process.stdin
   .pipe(process.stdout);
 ```
 
-and replace the `onFinish` function with something of your choice, and perhaps ignore the readable output from `tub()`. To use it programmatically on a particular test file, rather than `process.stdin` from tap test/file.js --tap, start out reading the file then pipe it to a test runner from `tap`.
+then hook into taps raw output and filter it through tub!
+
+```bash
+$ tap test/*.js --tap | ./tubber.js
+```
+
+which would give you the raw output like the following
+
+```
+{ plan: { start: 1, end: 5 },
+  asserts:
+   [ { ok: true, number: 1, name: 'upvotes good', info: [] },
+     { ok: true, number: 2, name: 'downvotes bad', info: [] },
+     { ok: true,
+       number: 3,
+       name: 'higher confidence means lowers bounds',
+       info: [] },
+     { ok: false,
+       number: 4,
+       name: 'this will fail deliberately',
+       info: [Object] },
+     { ok: true, number: 5, name: 'upvotes good', info: [] } ],
+  version: 13,
+  failed:
+   [ { ok: false,
+       number: 4,
+       name: 'this will fail deliberately',
+       info: [Object] } ],
+  ok: false,
+  summary: '1 / 5 assertions failed' }
+```
+
+Note that the failed asserts gets copied to the failed list, and when using `tap` as your test runner, then every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
+
+```js
+// add this line to the onFinish test:
+console.log(res.failed[0].info.join('\n'));
+```
+
+which will give the following extra output:
+
+```
+  ---
+    file:   /home/clux/repos/decay/test/all.js
+    line:   22
+    column: 5
+    stack:
+      - getCaller (/home/clux/local/node/lib/node_modules/tap/lib/tap-assert.js:418:17)
+      - Function.assert (/home/clux/local/node/lib/node_modules/tap/lib/tap-assert.js:21:16)
+      - Test._testAssert [as ok] (/home/clux/local/node/lib/node_modules/tap/lib/tap-test.js:86:16)
+      - Test.<anonymous> (/home/clux/repos/decay/test/all.js:22:5)
+      - Test.EventEmitter.emit (events.js:117:20)
+      - Test.emit (/home/clux/local/node/lib/node_modules/tap/lib/tap-test.js:103:8)
+      - GlobalHarness.Harness.process (/home/clux/local/node/lib/node_modules/tap/lib/tap-harness.js:86:13)
+      - process._tickCallback (node.js:415:13)
+      - Function.Module.runMain (module.js:499:11)
+      - startup (node.js:119:16)
+  ...
+```
+
 
 ## Usage 2
-If you want the behaviour above as a command line tool, you can install tub globally, and use the new `tub` executable:
+Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
 
 ```bash
 $ npm install -g tub
 $ tub test/*.js
+✗ 1 / 61 assertions failed
+7 name of failed test
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
 ```
 
-This usage is currently not available properly and in development.
+Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run.
+
+This provides a nice and short output for `tap` that quickly shows the failed tests.
+The full output looks like this:
+
+```
+$ tub test/*.js --all
+✓ 1 1-dim identity
+✓ 2 noop
+✓ 3 constant
+✓ 4 !false
+✓ 5 range/elem filter
+✓ 6 range/elem filter
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+✓ 8 primes 5,3 are coprime
+✓ 9 21 and 14 have 7 as gcd
+...
+more tests
+...
+✗ 1 / 61 assertions failed
+...
+same fail output for test 7
+...
+```
+
+### NEEDS TAP
+Note that a globally installed `tub` needs a globally installed `tap` at the moment.
+
+## Usage 3
+Use `tub` as a library and pipe tap test runner data to the tub stream.
+More difficult, but if you got a test runner, maybe `require('tap').Runner`,
+then it should be possible to pipe the output from that via `splitter` to `tub`.
+
+Not actually tested, but I'd be interested in hearing how this works out. I found using `child_process` to pipe from one to another to be an easier solution, but it depends on your goals.
 
 ## Running tests
 Install development dependencies
