@@ -11,6 +11,51 @@ Because it's based on streams2, it inherits from `stream.Transform` to do this, 
 The tap parser is also a little more relaxed than most tap parsers, in that numbers does not need to exist in the tap output, as long as the amount of tests add up to what's in the plan.
 
 ## Usage 1
+Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
+
+```bash
+$ npm install -g tub
+$ tub test/*.js
+✗ 1 / 61 assertions failed
+7 name of failed test
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+```
+
+Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run:
+
+```
+$ tub test/*.js --all
+✓ 1 1-dim identity
+✓ 2 noop
+✓ 3 constant
+✓ 4 !false
+✓ 5 range/elem filter
+✓ 6 range/elem filter
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+✓ 8 primes 5,3 are coprime
+✓ 9 21 and 14 have 7 as gcd
+...
+more tests
+...
+✗ 1 / 61 assertions failed
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+```
+
+### NEEDS TAP
+Note that a globally installed `tub` needs a globally installed `tap` at the moment.
+
+## Usage 2
 Create your own customized results logger for command line use:
 
 ```js
@@ -88,60 +133,15 @@ which will give the following extra output:
   ...
 ```
 
-
-## Usage 2
-Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
-
-```bash
-$ npm install -g tub
-$ tub test/*.js
-✗ 1 / 61 assertions failed
-7 name of failed test
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-```
-
-Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run.
-
-This provides a nice alternative to the traditional `tap` output that focuses on the failed tests:
-
-```
-$ tub test/*.js --all
-✓ 1 1-dim identity
-✓ 2 noop
-✓ 3 constant
-✓ 4 !false
-✓ 5 range/elem filter
-✓ 6 range/elem filter
-✗ 7 woot
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-✓ 8 primes 5,3 are coprime
-✓ 9 21 and 14 have 7 as gcd
-...
-more tests
-...
-✗ 1 / 61 assertions failed
-✗ 7 woot
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-```
-
-### NEEDS TAP
-Note that a globally installed `tub` needs a globally installed `tap` at the moment.
-
 ## Usage 3
 Use `tub` as a library and pipe tap test runner data to the tub stream.
-More difficult, but if you got a test runner, maybe `require('tap').Runner`,
-then it should be possible to pipe the output from that via `splitter` to `tub`.
+Alternatively, any raw TAP output data could be read from a log and piped to `tub` via `splitter`. Personal use of this involves parsing TAP output generated from C++.
 
-Not actually tested, but I'd be interested in hearing how this works out. I found using `child_process` to pipe from one to another to be an easier solution, but it depends on your goals.
+```js
+fs.createReadStream('./tapLog.txt').pipe(splitter()).pipe(tub(onEnd));
+```
+
+Obviously, if you use node's `child_process` module, you don't have to wait for the log to be written, but just pipe the spawned child directly!
 
 ## Running tests
 Install development dependencies
