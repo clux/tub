@@ -59,7 +59,6 @@ Note that a globally installed `tub` needs a globally installed `tap` at the mom
 Create your own customized results logger for command line use:
 
 ```js
-#!/usr/bin/env node
 // tubber.js
 var tub = require('tub');
 var splitter = require('splitter')
@@ -73,10 +72,10 @@ process.stdin
   .pipe(process.stdout);
 ```
 
-then hook into taps raw output and filter it through tub!
+then hook into some raw tap output (perhaps from the `tap` module) and hand it over to your script!
 
 ```bash
-$ tap test/*.js --tap | ./tubber.js
+$ tap test/*.js --tap | node tubber.js
 ```
 
 which would give you the raw output like the following
@@ -105,7 +104,7 @@ which would give you the raw output like the following
   summary: '1 / 5 assertions failed' }
 ```
 
-Note that the failed asserts gets copied to the failed list, and when using `tap` as your test runner, then every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
+Note that the failed asserts gets copied to the failed list. When using output from `tap`, every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
 
 ```js
 // add this line to `onFinish`
@@ -132,6 +131,8 @@ which will give the following extra output:
       - startup (node.js:119:16)
   ...
 ```
+
+But `info` can be set on any assert. It's just indented output belonging to the previous assertion.
 
 ## Usage 3
 Use `tub` as a library and pipe tap test runner data to the tub stream.
