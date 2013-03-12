@@ -25,38 +25,49 @@ Pumper.prototype._read = function (size) {
 
 
 test("2x pass", function (t) {
-  t.plan(3);
+  t.plan(9);
 
   var buff = "1..2\nok 1 first pass\nTAP version 13\nok 2 snd pass";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
+    t.equal(res.asserts[0].name, "first pass", "first pass name");
+    t.equal(res.asserts[0].number, 1, "first pass number");
+    t.ok(res.asserts[0].ok, "first pass");
+    t.equal(res.asserts[1].name, "snd pass", "snd pass name");
+    t.equal(res.asserts[1].number, 2, "snd pass number");
+    t.ok(res.asserts[1].ok, "2nd pass");
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(res.ok, "this should be a pass");
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
 });
 
-test("1 pass 1 fail", function (t) {
-  t.plan(3);
+test("2 pass 1 fail", function (t) {
+  t.plan(6);
 
-  var buff = "1..2\nok 1 first pass\n# comment\nnot ok 2 snd pass";
+  var buff = "1..3\nok 1 first pass\n# comment\nnot ok 2 snd failed\n  STACK\nok 3 woo";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
-    t.equal(res.asserts.length, 2, "should find 2 asserts");
+    t.equal(res.asserts.length, 3, "should find 3 asserts");
     t.equal(res.failed.length, 1, "should be 1 fail");
+    t.equal(res.failed[0].info.length, 1, "one line indented info for test 2");
+    t.equal(res.failed[0].info[0], "  STACK", "indented line 1");
+    t.equal(res.failed[0].number, 2, "failed test was number 2");
     t.ok(!res.ok, "this should be a fail");
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
 });
 
 test("2x pass no numbers", function (t) {
-  t.plan(3);
+  t.plan(5);
 
   var buff = "1..2\nok first pass\nok snd pass";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
+    t.equal(res.asserts[0].number, undefined, "first pass number undefined");
+    t.equal(res.asserts[1].number, undefined, "2nd pass number undefined");
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(res.ok, "this should be a pass");
   };
