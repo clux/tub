@@ -117,7 +117,7 @@ Tapper.prototype._transform = function (line, encoding, cb) {
     }
     else if (type === 'bail') {
       this.bail = m[1]; // bailout reason (may be empty string)
-      this.push('✗ Bail out! ' + m[1]);
+      this.push('✗ Bail out! ' + m[1] + '\n');
       this.end();
     }
     // ignore type === 'comment' in this module
