@@ -8,7 +8,11 @@ Tub is a streaming tap parser that serves two purposes.
 
 It's based on streams2, and inherits from `stream.Transform` to accomplish this, so you will need node >= 0.10.
 
+## Options
 The tap parser itself is a little more relaxed than most tap parsers, in that numbers does not need to exist in the tap output, as long as the amount of tests add up to what's in the plan. It also deals with the `Bail out!` statement.
+
+It will also ignore lines it cannot parse as valid TAP by default. To throw on such error pass a `{strict:true}`
+option.
 
 ## Usage 1
 Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
@@ -44,6 +48,7 @@ $ tub test/*.js --all
 ...
 more tests
 ...
+1..61
 ✗ 1 / 61 assertions failed
 ✗ 7 woot
   ---
