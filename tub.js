@@ -24,6 +24,7 @@ var order = [
 
 // assumes you feed it LINES (i.e. pass it through splitter first)
 function Tapper(onFinish, opts) {
+  opts || (opts = {});
   if (!(this instanceof Tapper)) {
     return new Tapper(onFinish, opts);
   }
@@ -32,6 +33,7 @@ function Tapper(onFinish, opts) {
   this.numFails = 0;
   this.plan = {};
   this.bail = null;
+  this.strict = !!opts.strict;
   this.on('finish', (function () {
     var r = {
       plan   : this.plan,
@@ -111,6 +113,7 @@ Tapper.prototype._transform = function (line, encoding, cb) {
         start: Number(p[1]),
         end: Number(p[2])
       };
+      this.push(line + '\n');
     }
     else if (type === 'version') {
       this.version = /^\d+(\.\d*)?$/.test(m[1]) ? Number(m[1]) : m[1];
@@ -134,8 +137,11 @@ Tapper.prototype._transform = function (line, encoding, cb) {
   }
 
   // if we are here, we failed to do find anything sensible in this line
-  // TODO: perhaps have haltOnError as an option to just silently ignore these lines
-  cb(new Error("failed to parse line: '" + line + "'"));
+  if (this.strict) {
+    return cb(new Error("failed to parse line: '" + line + "'"));
+  }
+  cb();
+
 };
 
 module.exports = Tapper;
