@@ -101,3 +101,37 @@ test("1x pass, then bail", function (t) {
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
 });
+
+
+// collect stream that will buffer on the other end
+function Collector(onFinish) {
+  stream.Writable.call(this);
+  this.buf = '';
+  this.on('finish', function () {
+    onFinish(this.buf);
+  });
+}
+inherits(Collector, stream.Writable);
+
+Collector.prototype._write = function (chunk, encoding, cb) {
+  this.buf += chunk;
+  cb(null);
+};
+
+test("verify readable stream", function (t) {
+  t.plan(5);
+  var buff = "1..2\nok 1 first pass\n\nnot ok 2 snd fail";
+  var pump = new Pumper(buff);
+  var onFinish = function (buf) {
+    var lines = buf.split('\n');
+    t.equal(lines.length, 4, "plan, 2 tests and blank string");
+    t.equal(lines[0], "1..2");
+    t.equal(lines[1], "✓ 1 first pass");
+    t.equal(lines[2], "✗ 2 snd fail");
+    t.equal(lines[3], "", "indeed blank");
+  };
+  var haul = new Collector(onFinish);
+  var noop = function () {};
+
+  pump.pipe(splitter()).pipe(tub(noop)).pipe(haul);
+});
