@@ -1,4 +1,4 @@
-# Tub [![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub)
+# Tub [![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub) [![Dependency Status](https://david-dm.org/clux/tub.png)](https://david-dm.org/clux/tub)
 
 Tub is a streaming tap parser that serves two purposes.
 
