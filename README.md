@@ -1,4 +1,4 @@
-# Tub [![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub) [![Dependency Status](https://david-dm.org/clux/tub.png)](https://david-dm.org/clux/tub)
+# tub [![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub) [![Dependency Status](https://david-dm.org/clux/tub.png)](https://david-dm.org/clux/tub)
 
 Tub is a streaming tap parser that serves two purposes.
 
@@ -67,6 +67,7 @@ Create your own customized results logger for command line use:
 // tubber.js
 var tub = require('tub');
 var splitter = require('splitter')
+var fullOutput = Math.random() > 0.5;
 var onFinish = function (res) {
   console.log(res);
   process.exit(res.ok ? 0 : 1)
@@ -74,7 +75,7 @@ var onFinish = function (res) {
 process.stdin
   .pipe(splitter())
   .pipe(tub(onFinish))
-  .pipe(process.stdout);
+  .pipe(fullOutput ? process.stdout : devNull()); // always need to read from tub
 ```
 
 then hook into some raw tap output (perhaps from the `tap` module) and hand it over to your script!
@@ -144,7 +145,10 @@ Use `tub` as a library and pipe tap test runner data to the tub stream.
 Alternatively, any raw TAP output data could be read from a log and piped to `tub` via `splitter`. Personal use of this involves parsing TAP output generated from C++.
 
 ```js
-fs.createReadStream('./tapLog.txt').pipe(splitter()).pipe(tub(onEnd));
+fs.createReadStream('./tapLog.txt')
+  .pipe(splitter())
+  .pipe(tub(onEnd))
+  .pipe(fullOutput ? process.stdout : devNull());
 ```
 
 Obviously, if you use node's `child_process` module, you don't have to wait for the log to be written, but just pipe the spawned child directly!
@@ -160,6 +164,12 @@ Run the tests
 
 ```bash
 $ npm test
+```
+
+Interesting sidenote; a *self testing test runner* is available:
+
+```bash
+$ ./bin.js test/ -a
 ```
 
 ## License

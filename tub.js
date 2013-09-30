@@ -1,7 +1,5 @@
 var Transform = require('stream').Transform
-  , util = require('util')
-  , inherits = util.inherits
-  , format = util.format;
+  , format = require('util').format;
 
 var re = {
   // number optional, matches delimited by at least one space `ok number comment`
@@ -23,18 +21,18 @@ var order = [
 ];
 
 // assumes you feed it LINES (i.e. pass it through splitter first)
-function Tapper(onFinish, opts) {
-  opts || (opts = {});
-  if (!(this instanceof Tapper)) {
-    return new Tapper(onFinish, opts);
+function Tub(onFinish, opts) {
+  if (!(this instanceof Tub)) {
+    return new Tub(onFinish, opts);
   }
+  opts = opts || {};
   Transform.call(this, opts);
   this.asserts = [];
   this.numFails = 0;
   this.plan = {};
   this.bail = null;
   this.strict = !!opts.strict;
-  this.on('finish', (function () {
+  this.on('finish', function () {
     var r = {
       plan   : this.plan,
       asserts: this.asserts,
@@ -71,12 +69,12 @@ function Tapper(onFinish, opts) {
       }
     }
     onFinish(r);
-  }).bind(this));
+  }.bind(this));
 }
-inherits(Tapper, Transform);
+Tub.prototype = Object.create(Transform.prototype);
 
-// assumes input is split before piped to Tapper
-Tapper.prototype._transform = function (line, encoding, cb) {
+// assumes input is split before piped to Tub
+Tub.prototype._transform = function (line, encoding, cb) {
   if (!line) {
     return cb();
   }
@@ -142,7 +140,6 @@ Tapper.prototype._transform = function (line, encoding, cb) {
     return cb(new Error("failed to parse line: '" + line + "'"));
   }
   cb();
-
 };
 
-module.exports = Tapper;
+module.exports = Tub;

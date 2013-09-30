@@ -1,18 +1,8 @@
 #!/usr/bin/env node
 var tub = require('./')
   , splitter = require('splitter')
+  , devNull = require('dev-null')
   , cp = require('child_process');
-
-var onFinish = function (res) {
-  console.log('%s %s', res.ok ? '✓' : '✗', res.summary);
-  res.failed.forEach(function (a) {
-    console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
-    if (a.info.length > 0) {
-      console.log(a.info.join('\n'));
-    }
-  });
-  process.exit(res.ok ? 0 : 1);
-};
 
 // simple extra argv option (-a or --all) that doesnt get passed through to `tap`
 var argv = process.argv.slice(2);
@@ -22,9 +12,16 @@ var tapArgs = argv.filter(function (a) {
   return (a !== '-a' && a !== '--all');
 }).concat('--tap');
 
-var child = cp.spawn('tap', tapArgs, {stdio: 'pipe'});
-var tubStream = child.stdout.pipe(splitter()).pipe(tub(onFinish));
-
-if (readTub) {
-  tubStream.pipe(process.stdout);
-}
+cp.spawn('tap', tapArgs, {stdio: 'pipe'}).stdout
+  .pipe(splitter())
+  .pipe(tub(function onEnd(res) {
+    console.log(res.ok ? '✓' : '✗', res.summary);
+    res.failed.forEach(function (a) {
+      console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
+      if (a.info.length > 0) {
+        console.log(a.info.join('\n'));
+      }
+    });
+    process.exit(res.ok ? 0 : 1);
+  }))
+  .pipe(readTub ? process.stdout : devNull());

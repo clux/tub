@@ -7,13 +7,22 @@
     "type": "git",
     "url": "clux/tub"
   },
-  "keywords": ["transform", "stream"],
+  "keywords": [
+    "test",
+    "runner",
+    "transform",
+    "stream",
+    "programmable"
+  ],
   "main": "tub.js",
   "bin": "bin.js",
   "scripts": {
     "test": "tap test/*.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "splitter": "~0.1.2",
+    "dev-null": "~0.1.1"
+  },
   "devDependencies": {
     "tap": "~0.4.4"
   },
