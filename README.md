@@ -20,49 +20,6 @@ It will also ignore lines it cannot parse as valid TAP by default. To throw on s
 option.
 
 ## Usage 1
-Use the bundled command line logger / stream filtration tool that can be used in place of `tap`:
-
-```bash
-$ npm install -g tub
-$ tub test/*.js
-✗ 1 / 61 assertions failed
-7 name of failed test
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-```
-
-Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run:
-
-```
-$ tub test/*.js --all
-✓ 1 1-dim identity
-✓ 2 noop
-✓ 3 constant
-✓ 4 !false
-✓ 5 range/elem filter
-✓ 6 range/elem filter
-✗ 7 woot
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-✓ 8 primes 5,3 are coprime
-✓ 9 21 and 14 have 7 as gcd
-...
-more tests
-...
-1..61
-✗ 1 / 61 assertions failed
-✗ 7 woot
-  ---
-    file:   /home/clux/repos/failedTestRepo/test.js
-    stack:  stack trace lines would follow here
-  ...
-```
-
-## Usage 2
 Create your own customized results logger for command line use:
 
 ```js
@@ -142,7 +99,7 @@ which will give the following extra output:
 
 But `info` can be set on any assert. It's just indented output belonging to the previous assertion.
 
-## Usage 3
+## Usage 2
 Use `tub` as a library and pipe tap test runner data to the tub stream.
 Alternatively, any raw TAP output data could be read from a log and piped to `tub` via `splitter`. Personal use of this involves parsing TAP output generated from C++.
 
@@ -155,6 +112,51 @@ fs.createReadStream('./tapLog.txt')
 
 Obviously, if you use node's `child_process` module, you don't have to wait for the log to be written, but just pipe the spawned child directly!
 
+## Usage 3
+Use the bundled bin file that can be used in place of `tap`:
+
+```bash
+$ npm install -g tub
+$ tub test/*.js
+✗ 1 / 61 assertions failed
+7 name of failed test
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+```
+
+Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run:
+
+```
+$ tub test/*.js --all
+✓ 1 1-dim identity
+✓ 2 noop
+✓ 3 constant
+✓ 4 !false
+✓ 5 range/elem filter
+✓ 6 range/elem filter
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+✓ 8 primes 5,3 are coprime
+✓ 9 21 and 14 have 7 as gcd
+...
+more tests
+...
+1..61
+✗ 1 / 61 assertions failed
+✗ 7 woot
+  ---
+    file:   /home/clux/repos/failedTestRepo/test.js
+    stack:  stack trace lines would follow here
+  ...
+```
+
+Note that using `tub` requires the module you are testing it on to have `tap` installed, the bin file is a convenience, not the main thing here.
+
 ## Running tests
 Install development dependencies
 
@@ -166,12 +168,6 @@ Run the tests
 
 ```bash
 $ npm test
-```
-
-Interesting sidenote; a *self testing test runner* is available:
-
-```bash
-$ ./bin.js test/ -a
 ```
 
 ## License
