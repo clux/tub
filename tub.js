@@ -32,6 +32,7 @@ function Tub(onFinish, opts) {
   this.plan = {};
   this.bail = null;
   this.strict = !!opts.strict;
+  this.on('error', onFinish);
   this.on('finish', function () {
     var r = {
       plan   : this.plan,
@@ -68,7 +69,7 @@ function Tub(onFinish, opts) {
         r.ok = true;
       }
     }
-    onFinish(r);
+    onFinish(null, r);
   }.bind(this));
 }
 Tub.prototype = Object.create(Transform.prototype);

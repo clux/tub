@@ -24,7 +24,7 @@ Pumper.prototype._read = function (size) {
 exports.twoPass = function (t) {
   var buff = "1..2\nok 1 first pass\nTAP version 13\nok 2 snd pass";
   var pump = new Pumper(buff);
-  var onFinish = function (res) {
+  var onFinish = function (err, res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
     t.equal(res.asserts[0].name, "first pass", "first pass name");
     t.equal(res.asserts[0].number, 1, "first pass number");
@@ -42,7 +42,7 @@ exports.twoPass = function (t) {
 exports.twoPassOneFail = function (t) {
   var buff = "1..3\nok 1 first pass\n# comment\nnot ok 2 snd failed\n  STACK\nok 3 woo";
   var pump = new Pumper(buff);
-  var onFinish = function (res) {
+  var onFinish = function (err, res) {
     t.equal(res.asserts.length, 3, "should find 3 asserts");
     t.equal(res.failed.length, 1, "should be 1 fail");
     t.equal(res.failed[0].info.length, 1, "one line indented info for test 2");
@@ -57,7 +57,7 @@ exports.twoPassOneFail = function (t) {
 exports.unnumberedPasses = function (t) {
   var buff = "1..2\nok first pass\nok snd pass";
   var pump = new Pumper(buff);
-  var onFinish = function (res) {
+  var onFinish = function (err, res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
     t.equal(res.asserts[0].number, undefined, "first pass number undefined");
     t.equal(res.asserts[1].number, undefined, "2nd pass number undefined");
@@ -68,12 +68,47 @@ exports.unnumberedPasses = function (t) {
   pump.pipe(splitter()).pipe(tub(onFinish));
 };
 
+exports.nonstrict = function (t) {
+  var buff = "1..2\nok first pass\ngibberish\nok snd pass";
+  var pump = new Pumper(buff);
+  var onFinish = function (err, res) {
+    t.equal(res.asserts.length, 2, "should find 2 asserts");
+    t.equal(res.failed.length, 0, "should be 0 fails");
+    t.ok(res.ok, "basic pass 2/2");
+    t.done();
+  };
+  pump.pipe(splitter()).pipe(tub(onFinish));
+};
+
+exports.strict = function (t) {
+  var buff = "1..2\nok first pass\ngibberish\nok snd pass";
+  var pump = new Pumper(buff);
+  var onFinish = function (err) {
+    t.equal(err.message,  "failed to parse line: 'gibberish'", 'error set');
+    t.done();
+  };
+  pump.pipe(splitter()).pipe(tub(onFinish, { strict: true }));
+};
+
 exports.plan = function (t) {
   var buff = "1..3\nok first pass\nok snd pass";
   var pump = new Pumper(buff);
-  var onFinish = function (res) {
+  var onFinish = function (err, res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
     t.equal(res.failed.length, 0, "should be 0 fails");
+    t.ok(!res.ok, "this should not be a pass, missing one assert");
+    t.done();
+  };
+  pump.pipe(splitter()).pipe(tub(onFinish));
+};
+
+exports.missingPlan = function (t) {
+  var buff = "ok first pass\nok snd pass";
+  var pump = new Pumper(buff);
+  var onFinish = function (err, res) {
+    t.equal(res.asserts.length, 2, "should find 2 asserts");
+    t.equal(res.failed.length, 0, "should be 0 fails");
+    t.equal(res.summary, 'no plan found', 'summary reflects plan missing');
     t.ok(!res.ok, "this should not be a pass, missing one assert");
     t.done();
   };
@@ -83,7 +118,7 @@ exports.plan = function (t) {
 exports.bailout = function (t) {
   var buff = "1..2\nok first pass\nBail out! something fubar";
   var pump = new Pumper(buff);
-  var onFinish = function (res) {
+  var onFinish = function (err, res) {
     t.equal(res.plan.start, 1, "plan starts at 1");
     t.equal(res.plan.end, 2, "plan ends at 2");
     t.equal(res.asserts.length, 1, "should find 1 asserts");
@@ -94,7 +129,6 @@ exports.bailout = function (t) {
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
 };
-
 
 // collect stream that will buffer on the other end
 function Collector(onFinish) {
