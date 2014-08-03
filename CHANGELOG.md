@@ -1,10 +1,10 @@
-0.3.0 / 2014-08-03
+0.3.1 / 2014-08-03
 ==================
   * Fixed the `strict` option's errors getting lost in the ether
   * Tub's onFinish now conforms to standard node error style `(err, res) -> {}`
     - **BREAKS API** before there was only the `res` parameters in the callback
   * Documentation and coverage added
-  * Remove reliance on global tap install
+  * Remove reliance on tap for CLI: `tub` assumes `tap` is present in `$(npm bin)` at cwd
 
 0.2.0 / 2013-04-03
 ==================

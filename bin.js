@@ -12,11 +12,13 @@ var tapArgs = argv.filter(function (a) {
   return (a !== '-a' && a !== '--all');
 }).concat('--tap');
 
-cp.spawn('./node_modules/.bin/tap', tapArgs, {stdio: 'pipe', cwd: __dirname })
+var pth = require('path').join(__dirname, 'node_modules', '.bin', 'tap');
+cp.spawn(pth, tapArgs, {stdio: 'pipe', cwd: process.cwd() })
   .stdout
   .pipe(splitter())
   .pipe(tub(function onEnd(err, res) {
     if (err) {
+      // should not really happen here because we never use tub in strict mode
       console.error('✗ parse failure');
       console.error(err);
       process.exit(1);
