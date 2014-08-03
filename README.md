@@ -18,7 +18,7 @@ It will also ignore lines it cannot parse as valid TAP by default. To throw on s
 option.
 
 ## Usage 1
-Use the bundled command line logger / stream filtration tool that can be used in place of `tap`, when installing `tub` globally:
+Use the bundled command line logger / stream filtration tool that can be used in place of `tap`:
 
 ```bash
 $ npm install -g tub
@@ -60,17 +60,14 @@ more tests
   ...
 ```
 
-### NEEDS TAP
-Note that a globally installed `tub` needs a globally installed `tap` at the moment.
-
 ## Usage 2
 Create your own customized results logger for command line use:
 
 ```js
 // tubber.js
 var tub = require('tub');
-var splitter = require('splitter')
-var fullOutput = Math.random() > 0.5;
+var splitter = require('splitter');
+var fullOutput = Boolean(process.argv[2]);
 var onFinish = function (res) {
   console.log(res);
   process.exit(res.ok ? 0 : 1)

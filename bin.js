@@ -12,7 +12,8 @@ var tapArgs = argv.filter(function (a) {
   return (a !== '-a' && a !== '--all');
 }).concat('--tap');
 
-cp.spawn('tap', tapArgs, {stdio: 'pipe'}).stdout
+cp.spawn('./node_modules/.bin/tap', tapArgs, {stdio: 'pipe', cwd: __dirname })
+  .stdout
   .pipe(splitter())
   .pipe(tub(function onEnd(res) {
     console.log(res.ok ? '✓' : '✗', res.summary);
