@@ -1,8 +1,6 @@
-var test = require('tap').test
-  , splitter = require('splitter')
-  , tub = require('../')
+var splitter = require('splitter')
+  , tub = require(process.env.TUB_COV ? '../tub-cov.js' : '../')
   , stream = require('stream');
-
 
 // basic read stream that will emit data given
 function Pumper(data) {
@@ -23,9 +21,7 @@ Pumper.prototype._read = function (size) {
 };
 
 
-test("2x pass", function (t) {
-  t.plan(9);
-
+exports.twoPass = function (t) {
   var buff = "1..2\nok 1 first pass\nTAP version 13\nok 2 snd pass";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
@@ -38,13 +34,12 @@ test("2x pass", function (t) {
     t.ok(res.asserts[1].ok, "2nd pass");
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(res.ok, "this should be a pass");
+    t.done();
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
-});
+};
 
-test("2 pass 1 fail", function (t) {
-  t.plan(6);
-
+exports.twoPassOneFail = function (t) {
   var buff = "1..3\nok 1 first pass\n# comment\nnot ok 2 snd failed\n  STACK\nok 3 woo";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
@@ -54,13 +49,12 @@ test("2 pass 1 fail", function (t) {
     t.equal(res.failed[0].info[0], "  STACK", "indented line 1");
     t.equal(res.failed[0].number, 2, "failed test was number 2");
     t.ok(!res.ok, "this should be a fail");
+    t.done();
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
-});
+};
 
-test("2x pass no numbers", function (t) {
-  t.plan(5);
-
+exports.unnumberedPasses = function (t) {
   var buff = "1..2\nok first pass\nok snd pass";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
@@ -69,25 +63,24 @@ test("2x pass no numbers", function (t) {
     t.equal(res.asserts[1].number, undefined, "2nd pass number undefined");
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(res.ok, "this should be a pass");
+    t.done();
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
-});
+};
 
-test("2x pass no, but plan longer", function (t) {
-  t.plan(3);
-
+exports.plan = function (t) {
   var buff = "1..3\nok first pass\nok snd pass";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
     t.equal(res.asserts.length, 2, "should find 2 asserts");
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(!res.ok, "this should not be a pass, missing one assert");
+    t.done();
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
-});
+};
 
-test("1x pass, then bail", function (t) {
-  t.plan(6);
+exports.bailout = function (t) {
   var buff = "1..2\nok first pass\nBail out! something fubar";
   var pump = new Pumper(buff);
   var onFinish = function (res) {
@@ -97,9 +90,10 @@ test("1x pass, then bail", function (t) {
     t.equal(res.failed.length, 0, "should be 0 fails");
     t.ok(res.summary.indexOf('something fubar') >= 0, 'bailout string in summary');
     t.ok(!res.ok, "this should not be a pass, bailed out");
+    t.done();
   };
   pump.pipe(splitter()).pipe(tub(onFinish));
-});
+};
 
 
 // collect stream that will buffer on the other end
@@ -117,20 +111,23 @@ Collector.prototype._write = function (chunk, encoding, cb) {
   cb(null);
 };
 
-test("verify readable stream", function (t) {
-  t.plan(5);
+exports.stream = function (t) {
   var buff = "1..2\nok 1 first pass\n\nnot ok 2 snd fail";
   var pump = new Pumper(buff);
   var onFinish = function (buf) {
     var lines = buf.split('\n');
     t.equal(lines.length, 4, "plan, 2 tests and blank string");
-    t.equal(lines[0], "1..2");
-    t.equal(lines[1], "✓ 1 first pass");
-    t.equal(lines[2], "✗ 2 snd fail");
-    t.equal(lines[3], "", "indeed blank");
+    t.deepEqual(lines, [
+        "1..2",
+        "✓ 1 first pass",
+        "✗ 2 snd fail",
+        ""
+      ], 'matches input'
+    );
+    t.done();
   };
   var haul = new Collector(onFinish);
   var noop = function () {};
 
   pump.pipe(splitter()).pipe(tub(noop)).pipe(haul);
-});
+};
