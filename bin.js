@@ -12,26 +12,20 @@ var tapArgs = argv.filter(function (a) {
   return (a !== '-a' && a !== '--all');
 }).concat('--tap');
 
+var onEnd = function (err, res) {
+  console.log(res.ok ? '✓' : '✗', res.summary);
+  res.failed.forEach(function (a) {
+    console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
+    if (a.info.length > 0) {
+      console.log(a.info.join('\n'));
+    }
+  });
+  process.exit(res.ok ? 0 : 1);
+};
+
 var pth = require('path').join(__dirname, 'node_modules', '.bin', 'tap');
 cp.spawn(pth, tapArgs, {stdio: 'pipe', cwd: process.cwd() })
   .stdout
   .pipe(splitter())
-  .pipe(tub(function onEnd(err, res) {
-    if (err) {
-      // should not really happen here because we never use tub in strict mode
-      console.error('✗ parse failure');
-      console.error(err);
-      process.exit(1);
-    }
-    else {
-      console.log(res.ok ? '✓' : '✗', res.summary);
-      res.failed.forEach(function (a) {
-        console.log('%s%s', a.number !== undefined ? a.number + ' ' : '', a.name);
-        if (a.info.length > 0) {
-          console.log(a.info.join('\n'));
-        }
-      });
-      process.exit(res.ok ? 0 : 1);
-    }
-  }))
+  .pipe(tub(onEnd))
   .pipe(readTub ? process.stdout : devNull());
