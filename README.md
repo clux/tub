@@ -1,7 +1,9 @@
 # tub
-[![Build Status](https://secure.travis-ci.org/clux/tub.png)](http://travis-ci.org/clux/tub)
-[![Dependency Status](https://david-dm.org/clux/tub.png)](https://david-dm.org/clux/tub)
-[![unstable](http://hughsk.github.io/stability-badges/dist/unstable.svg)](http://nodejs.org/api/documentation.html#documentation_stability_index)
+[![npm status](http://img.shields.io/npm/v/tub.svg)](https://www.npmjs.org/package/tub)
+[![build status](https://secure.travis-ci.org/clux/tub.svg)](http://travis-ci.org/clux/tub)
+[![dependency status](https://david-dm.org/clux/tub.svg)](https://david-dm.org/clux/tub)
+[![coverage status](http://img.shields.io/coveralls/clux/tub.svg)](https://coveralls.io/r/clux/tub)
+[![unstable](http://img.shields.io/badge/stability-unstable-E5AE13.svg)](http://nodejs.org/api/documentation.html#documentation_stability_index)
 
 Tub is a streaming tap parser that serves two purposes.
 
