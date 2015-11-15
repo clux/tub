@@ -2,15 +2,13 @@
 var tub = require('./')
   , splitter = require('splitter')
   , devNull = require('dev-null')
-  , cp = require('child_process');
+  , cp = require('child_process')
+  , argv = require('minimist')(process.argv.slice(2));
 
-// simple extra argv option (-a or --all) that doesnt get passed through to `tap`
-var argv = process.argv.slice(2);
-var readTub = (argv.indexOf('-a') >= 0 || argv.indexOf('--all') >= 0);
-
-var tapArgs = argv.filter(function (a) {
-  return (a !== '-a' && a !== '--all');
-}).concat('--tap');
+if (argv.h || argv.help) {
+  console.log('tapsource | tub [-a]');
+  process.exit(0);
+}
 
 var onEnd = function (err, res) {
   console.log(res.ok ? '✓' : '✗', res.summary);
@@ -23,9 +21,6 @@ var onEnd = function (err, res) {
   process.exit(res.ok ? 0 : 1);
 };
 
-var pth = require('path').join(__dirname, 'node_modules', '.bin', 'tap');
-cp.spawn(pth, tapArgs, {stdio: 'pipe', cwd: process.cwd() })
-  .stdout
-  .pipe(splitter())
+process.stdin.pipe(splitter())
   .pipe(tub(onEnd))
-  .pipe(readTub ? process.stdout : devNull());
+  .pipe(argv.a || argv.all ? process.stdout : devNull());

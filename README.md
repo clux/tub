@@ -3,7 +3,6 @@
 [![build status](https://secure.travis-ci.org/clux/tub.svg)](http://travis-ci.org/clux/tub)
 [![dependency status](https://david-dm.org/clux/tub.svg)](https://david-dm.org/clux/tub)
 [![coverage status](http://img.shields.io/coveralls/clux/tub.svg)](https://coveralls.io/r/clux/tub)
-[![unstable](http://img.shields.io/badge/stability-unstable-E5AE13.svg)](http://nodejs.org/api/documentation.html#documentation_stability_index)
 
 Tub is a streaming tap parser that serves two purposes.
 
@@ -19,7 +18,8 @@ The tap parser itself is a little more relaxed than most tap parsers, in that nu
 It will also ignore lines it cannot parse as valid TAP by default. To throw on such error pass a `{strict:true}`
 option.
 
-## Usage 1
+## Library Usage
+### Custom Logger
 Create your own customized results logger for command line use:
 
 ```js
@@ -34,7 +34,7 @@ var onFinish = function (res) {
 process.stdin
   .pipe(splitter())
   .pipe(tub(onFinish))
-  .pipe(fullOutput ? process.stdout : devNull()); // always need to read from tub
+  .pipe(fullOutput ? process.stdout : devNull());
 ```
 
 then hook into some raw tap output (perhaps from the `tap` module) and hand it over to your script!
@@ -69,7 +69,7 @@ which would give you the raw output like the following
   summary: '1 / 5 assertions failed' }
 ```
 
-Note that the failed asserts gets copied to the failed list. When using output from `tap`, every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
+Failed asserts gets copied to the failed list. When using output from `tap`, every failed test will have an info list which can be joined to produce the normal stack trace that normally accompanies them:
 
 ```js
 // add this line to `onFinish`
@@ -99,10 +99,7 @@ which will give the following extra output:
 
 But `info` can be set on any assert. It's just indented output belonging to the previous assertion.
 
-## Usage 2
-Use `tub` as a library and pipe tap test runner data to the tub stream.
-Alternatively, any raw TAP output data could be read from a log and piped to `tub` via `splitter`. Personal use of this involves parsing TAP output generated from C++.
-
+### Parsing Logs
 ```js
 fs.createReadStream('./tapLog.txt')
   .pipe(splitter())
@@ -110,14 +107,12 @@ fs.createReadStream('./tapLog.txt')
   .pipe(fullOutput ? process.stdout : devNull());
 ```
 
-Obviously, if you use node's `child_process` module, you don't have to wait for the log to be written, but just pipe the spawned child directly!
-
-## Usage 3
-Use the bundled bin file that can be used in place of `tap`:
+## Global Usage
+Bunbled bin file will read TAP from stdin:
 
 ```bash
 $ npm install -g tub
-$ tub test/*.js
+$ tap test/*.js | tub
 ✗ 1 / 61 assertions failed
 7 name of failed test
   ---
@@ -126,10 +121,10 @@ $ tub test/*.js
   ...
 ```
 
-Any arguments passed to `tub` is passed directly through to `tap`, with the sole exception of `-a` or `--all`, which causes the output from `tub` to be additionally piped to `process.stdout` to provide go-along feedback as the tests run:
+To see every assert, you can add the `-a` flag to `tub`:
 
 ```
-$ tub test/*.js --all
+$ tap test/*.js | tub -a
 ✓ 1 1-dim identity
 ✓ 2 noop
 ✓ 3 constant
@@ -153,21 +148,6 @@ more tests
     file:   /home/clux/repos/failedTestRepo/test.js
     stack:  stack trace lines would follow here
   ...
-```
-
-Note that using `tub` requires the module you are testing it on to have `tap` installed, the bin file is a convenience, not the main thing here.
-
-## Running tests
-Install development dependencies
-
-```bash
-$ npm install
-```
-
-Run the tests
-
-```bash
-$ npm test
 ```
 
 ## License

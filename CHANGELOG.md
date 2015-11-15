@@ -1,3 +1,8 @@
+0.4.0 / 2015-11-16
+==================
+  * Changed `tub` bin to only read TAP from stdin
+  * Added `.npmignore`
+
 0.3.1 / 2014-08-03
 ==================
   * Fixed the `strict` option's errors getting lost in the ether

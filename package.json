@@ -3,7 +3,6 @@
   "description": "Lax streaming tap parser",
   "author": "Eirik Albrigtsen <analsandblaster@gmail.com>",
   "version": "0.3.1",
-  "stability": "unstable",
   "repository": {
     "type": "git",
     "url": "clux/tub"
@@ -20,14 +19,13 @@
   "scripts": {
     "test": "nodeunit test/*.js --reporter=verbose",
     "coverage": "jscoverage tub.js && TUB_COV=1 nodeunit --reporter=lcov test",
-    "coveralls": "npm run coverage | coveralls"
+    "man": "marked-man manpage.md -o tub.1"
   },
   "dependencies": {
     "splitter": "^0.1.2",
     "dev-null": "^0.1.1"
   },
   "devDependencies": {
-    "coveralls": "^2.11.1",
     "jscoverage": "^0.5.5",
     "nodeunit": "^0.9.0"
   },

@@ -1,0 +1,28 @@
+.TH "TUB" "1" "November 2015" "" ""
+.SH "NAME"
+\fBtub\fR
+.P
+Parse TAP sources from stdin
+.SH SYNOPSIS
+.P
+\fBtub [\-a]\fP
+.SH DESCRIPTION
+.P
+Reads TAP from stdin and prints the summary\.
+.SH EXAMPLES
+.P
+Summary only via nodeunit
+.P
+\fBnodeunit test/ \-\-reporter=tap | tub\fP
+.P
+Summary + prettified TAP via tap
+.P
+\fBtap test/ | tub \-a\fP
+.SH INSTALLATION
+.P
+Install globally through npm
+.P
+\fBnpm install \-g tub\fP
+.SH BUGS
+.P
+Please report bugs  \fIhttps://github\.com/clux/tub/issues\fR
