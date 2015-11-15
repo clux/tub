@@ -14,6 +14,7 @@
     "stream",
     "programmable"
   ],
+  "man": "tub.1",
   "main": "tub.js",
   "bin": "bin.js",
   "scripts": {
