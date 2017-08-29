@@ -1,7 +1,7 @@
 {
   "name": "tub",
   "description": "Lax streaming tap parser",
-  "author": "Eirik Albrigtsen <analsandblaster@gmail.com>",
+  "author": "Eirik Albrigtsen <sszynrae@gmail.com>",
   "version": "0.4.0",
   "repository": {
     "type": "git",
